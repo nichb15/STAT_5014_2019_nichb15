@@ -1,4 +1,0 @@
-# STAT_5014_Fall_2019
-# STAT_5014_Fall_2019
-# STAT_5014_Fall_2019_nichb15
-# STAT_5014_Fall_2019_nichb15
