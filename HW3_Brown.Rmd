@@ -1,0 +1,88 @@
+---
+title: "HW3_Brown"
+author: "Nick Brown"
+date: "9/17/2019"
+output: pdf_document
+---
+
+Problem 3:
+
+```{r, include = FALSE}
+# Install tidyverse and dplyr
+options(repos = c(CRAN="http://cran.us.r-project.org"))
+options(tinytex.verbose = TRUE)
+install.packages("tidyverse")
+library(tidyverse)
+
+
+```
+
+a. Sensory data from five operators:
+
+
+```{r sensory}
+#sensory_url <- "https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
+sensory_table <- read.table("https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat", stringsAsFactors = FALSE, fill = TRUE)
+View(sensory_table)
+
+new_sensory <- sensory_table[-c(1),]
+view(new_sensory)
+sensory_table <- new_sensory[-c(1),]
+View(sensory_table)
+View(sensory_table)
+t<- sensory_table %>% filter(is.na(V6))
+View(t)
+t<- sensory_table %>% filter(!is.na(V6))
+sensory_table_na<- sensory_table %>% filter(is.na(V6))
+sensory_table_not_na<- sensory_table %>% filter(!is.na(V6))
+sensory_table_na
+sensory_table_not_na
+
+```
+
+
+b. Gold Medal performance for Olympic Men’s Long Jump:
+
+
+
+```{r gold}
+gold_url <- "https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat"
+gold_table <- read.table(gold_url,stringsAsFactors = FALSE, fill = TRUE)
+View(gold_table)
+non_na_gold <- gold_table[-c(9,10,11,12)]
+gold_table <- non_na_gold[-c(1),]
+gold_table
+
+```
+
+c. Brain weight and body weight:
+
+
+
+```{r brain}
+brain_url <- "https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BrainandBodyWeight.dat"
+brain_table <- read.table(brain_url,stringsAsFactors = FALSE, fill = TRUE)
+View(brain_table)
+non_na_brain <- brain_table[,-c(7,8,9,10,11,12)]
+brain_table <- non_na_brain[-c(1),]
+brain_table
+
+```
+
+d. Triplicate measurements of tomato yield for two varieties of tomatoes:
+
+
+
+```{r tomatoes}
+tomato_url <- "https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/tomato.dat"
+tomato_table <- read.table(tomato_url,fill = TRUE)
+View(tomato_table)
+non_na_tomato <- tomato_table[-c(1),]
+tomato_table <- non_na_tomato
+tomato_table
+
+```
+
+
+
+
