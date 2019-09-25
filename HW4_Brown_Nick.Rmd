@@ -1,0 +1,57 @@
+---
+title: "HW4_Brown_Nick"
+author: "Nick Brown"
+date: "9/24/2019"
+output: pdf_document
+---
+
+
+Problem 4
+
+The programming style guides are necessary to establish conventions among collaborators. Since programming and data science are team sports, other individuals will be required to view others' code. To avoid confusion, anguish, and complications, coders should follow standard rules when programming. When this happens, code can be interchanged among individuals and can be iteratively built.
+
+To improve my coding style, I will follow Google's coding convention. Google is the 800 lbs gorilla and can establish trends and precedence within an industry. To stay highly abreast of computing trends, coding, and products, I feel that following Google is necessary for any burgeoning programmer.
+
+Problem 5
+
+```{r, include = FALSE}
+# Install lintr
+options(repos = c(CRAN="http://cran.us.r-project.org"))
+options(tinytex.verbose = TRUE)
+install.packages("tidyverse")
+install.packages("lintr")
+library(tidyverse)
+library(lintr)
+lint(filename = "/Users/Niko/Documents/STAT_5014_2019_nichb15/HW3R1_Brown.RMD")
+
+
+```
+
+There are many things I must change in my code such as the following:
+1) Add spaces after commas
+2) Do not use absolute paths
+3) Remove trailing blank lines
+4) Put spaces around all infix operators
+
+Problem 6
+
+```{r, include = FALSE}
+# Read in rds file
+
+des_stats <- readRDS("HW4_data.rds")
+dev_1 <- des_stats$dev1
+dev_2 <- des_stats$dev2
+dev_1_2 <- c(des_stats$dev1, des_stats$dev2)
+obs <- des_stats$Observer
+calc_mean <- function(dev_mean) { 
+  result <- mean(dev_mean)}
+calc_sd <- function(dev_sd) { 
+  result <- sd(dev_sd)}
+calc_cor <- function(dev_cor) { 
+  result <- cor(dev_cor)}
+
+```
+
+Problem 7
+
+Problem 8
