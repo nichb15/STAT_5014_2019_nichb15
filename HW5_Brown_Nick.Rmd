@@ -1,0 +1,94 @@
+---
+title: "HW5_Brown_Nick"
+author: "Nick Brown"
+date: "10/1/2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+Problem 1
+--Knit to HTML
+
+Problem 2
+--Calculate sum of squares errors
+
+```{r ss_errors}
+
+set.seed(12345)
+y <- seq(from=1, to=100, length.out = 1e8) + rnorm(1e8)
+
+# Part a - iteration loop
+
+system.time({
+sequence <- length(y)
+mean_y = mean(y)
+sum_squares = 0
+for(i in 1:sequence) {
+  sum_squares = sum_squares + ((y[i] - mean_y)^2)
+}
+})
+print(sum_squares)
+
+# Part b - vector operations
+system.time({sum((y - mean(y))^2)})
+sum((y - mean(y))^2)
+```
+
+Problem 3
+--Given X and ~h below, implement the above algorithm and compare the results with lm(h~0+X). State the
+tolerance used and the step size, α.
+
+```{r regression}
+
+set.seed(1256)
+theta <- as.matrix(c(1,2),nrow=2)
+X <- cbind(1,rep(1:10,10))
+h <- X%*%theta+rnorm(100,0,0.2)
+
+#lm(h~theta + X)
+```
+
+Problem 4
+--what are you to do?? Can you explain what is going on?
+
+Beta-hat coefficient is typically calculated as (X'X)^-1 X'but when this expression is multiplied by X, then it creates the hat matrix. In this expression, however, the expression is multiplied by the y matrix instead.
+
+Problem 5
+--Compute the following: 
+y = p + AB^−1 (q − r)
+
+```{r need_for_speed}
+
+#set.seed(12456)
+#G <- matrix(sample(c(0,0.5,1),size=16000,replace=T),ncol=10)
+#R <- cor(G) # R: 10 * 10 correlation matrix of G
+#C <- kronecker(R, diag(1600)) # C is a 16000 * 16000 block diagonal matrix
+#id <- sample(1:16000,size=932,replace=F)
+#q <- sample(c(0,0.5,1),size=15068,replace=T) # vector of length 15068
+#A <- C[id, -id] # matrix of dimension 932 * 15068
+#B <- C[-id, -id] # matrix of dimension 15068 * 15068
+#p <- runif(932,0,1)
+#r <- runif(15068,0,1)
+#C<-NULL #save some memory space
+
+#object.size(A)
+#object.size(B)
+
+#system.time({y <- p+A*B**-1*(q-r)})
+
+```
+
+Part a:
+
+The bytes size of A is 112347224 bytes
+The bytes size of B is 1816357208 bytes
+
+Part b.
+How would you break apart this compute, i.e., what order of operations would make sense? We would first start with the B array and raise to the power of -1. (Unfortunately, my code would not compute this.) Then we would multiply this figure by A. Next we would subtract r from q, then multiply this times the aforementioned expression. Last, we would add p.
+
+Are there any mathmatical simplifications you can make? The formula seems straightforward, therefore, it doesn't appear that a simplification can be made.
+
+Is there anything about the vectors or matrices we might take advantage of? Yes, the result from q-r should be its own vector so that multiplying AB and (q-r) can occur use matrix algebra.
+
+Part c.
