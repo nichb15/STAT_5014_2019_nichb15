@@ -1,0 +1,289 @@
+---
+title: "HW6_Brown_Nick"
+author: "Nick Brown"
+date: "10/14/2019"
+output: pdf_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, include=TRUE, eval=TRUE)
+library(knitr)
+library(ggplot2)
+```
+
+Problem 1
+I completed the Swirl lesson parts 10, 11, and 12.
+
+Problem 2
+Homework is saved as a pdf in accordance with naming convention study
+
+Problem 3
+
+a. Create a function that computes the proportion of successes in a vector
+
+A matrix of this sort will have at least least two vectors: name and success. A success will be denoted as "1" and a non-success will be "0".
+
+A function that computes the proporition of successes in a vector would be simply the mean of the success column. Whatever the mean, then this is the proportion of success. 
+
+Thus, we can use a mean function as follows:
+
+```{r proportion_of_successes }
+
+teams <- c("Redskins", "Cowboys", "Eagles", "Patriots", "Dolphins", "Chiefs")
+sunday_win <- c(1,0,0,1,0,1)
+success_df <- data.frame(teams,sunday_win)
+
+victory_calc <- function(winning) {
+  prop_of_success <- mean(winning)
+  return(prop_of_success)
+}
+victory_calc(sunday_win)
+```
+As noted, the mean of the success column will represent the proportion of success in a given numeric vector. 
+
+b. Create a matrix to simulate 10 flips of a coin with varying degrees of “fairness” (columns = probability)
+as follows:
+
+```{r coin_flips }
+
+set.seed(12345)
+P4b_data <- matrix(rbinom(10, 1, prob = (30:40)/100), nrow = 10, ncol = 10, byrow = FALSE)
+```
+
+c. Use your function in conjunction with apply to compute the proportion of success in P4b_data by column and then by row. 
+
+```{r coin_flips_calculator }
+
+column_successes <- apply(P4b_data, 2, victory_calc)
+row_successes <- apply(P4b_data, 1, victory_calc)
+
+column_successes
+row_successes
+
+```
+
+What do you observe? 
+
+The rows and columns have different success probabilities. Every column has a success proportion of 0.6, but the row vectors have 6 rows where success is guaranteed and 4 rows where defeat is expected.
+
+
+What is going on?
+
+The coin flips are systematic and identical; therefore, the success rates are the same in every column. When we calculate across rows, there is not a variation in outcomes, and as a result, the row successes will be completely binary, whereas the column successes will be a proportion between 0 and 1.
+
+d. You are to fix the above matrix by creating a function whose input is a probability and output is a vector whose elements are the outcomes of 10 flips of a coin. Now create a vector of the desired probabilities. Using the appropriate apply family function, create the matrix we really wanted above.
+
+```{r corrected_matrix  }
+
+new_outcomes <- function(success_prob) {
+  success_vector <-t(rbinom(10, 1, prob = success_prob))
+  return(success_vector)
+}
+
+blank_matrix <- matrix(nrow = 10, ncol = 10)
+vector_of_success_probs <- c(.1,.2,.3,.4,.5,.1,.2,.3,.4,.5)
+
+new_matrix <- apply(t(vector_of_success_probs), 2, new_outcomes)
+
+new_matrix
+
+```
+
+The new matrix is outputted above and it shows the variability occurring within each vector across columns and across rows. This is the randomness we were seeking when performing 10 flips with random probabilities in a given set, then doing these sets 10 times for a total of 100 flips.
+
+Prove this has worked by using the function created in part a to compute and tabulate the appropriate marginal successes.
+
+```{r }
+
+new_column_successes <- apply(new_matrix, 2, victory_calc)
+new_row_successes <- apply(new_matrix, 1, victory_calc)
+
+new_column_successes
+new_row_successes
+```
+
+Across margins, we can see the different success rates. This indicates that the function created works appropriately in demonstrating the differences in marginal successes across columns and rows.
+
+Problem 4
+
+In Homework 4, we had a dataset we were to compute some summary statistics from. The description of the data was given as “a dataset which has multiple repeated measurements from two devices by thirteen Observers”. Where the device measurements were in columns “dev1” and “dev2”. Reimport that dataset, change the names of “dev1” and “dev2” to x and y and do the following:
+
+
+```{r reimport_hw4data }
+  HW6_data <- readRDS("HW4_data.rds")
+  colnames(HW6_data) <- c("Observer","x","y")
+  head(HW6_data)
+  
+```
+
+The homework 4 dataset was imported as a homework 6 dataset, and the column names were changed from "dev1" and "dev2" to x and y, respectively.
+  
+1. create a function that accepts a dataframe of values, title, and x/y labels and creates a scatter plot
+
+```{r overall_scatterplot }
+overall_scatterplot <- function(df) {
+  attach(df)
+  all_scatterplot <- plot(x, y,main = "Scatterplot", xlab = "X", ylab = "Y", pch=10)
+  return(all_scatterplot)
+}
+
+overall_scatterplot(HW6_data)
+  
+```
+
+2. use this function to create:
+(a) a single scatter plot of the entire dataset
+
+```{r }
+
+overall_scatterplot(HW6_data)
+  
+```
+
+The overall scatter plot of the entire dataset has been created and can be seen above.
+
+(b) a seperate scatter plot for each observer (using the apply function)
+
+```{r individual_scatterplot }
+individual_scatterplot <- function(obs_input,df) {
+  all_scatterplot <- with(df[(df$Observer == obs_input),], plot(x, y,main = "Individual Scatter plot", xlab = "X", ylab = "Y", pch=10))
+  return(all_scatterplot)
+}
+
+lapply(c(1:13), individual_scatterplot,df=HW6_data)
+  
+```
+The 13 scatterplots have been inserted above, each with fascinating designs!
+
+Problem 5
+
+Our ultimate goal in this problem is to create an annotated map of the US. I am giving you the code to create said map, you will need to customize it to include the annotations.
+Part a. Get and import a database of US cities and states.
+
+```{r get_city_list }
+    #we are grabbing a SQL set from here
+    options(repos = c(CRAN="http://www.farinspace.com/wp-content/uploads/us_cities_and_states.zip"))
+    #download the files, looks like it is a .zip
+    library(downloader)
+    download("http://www.farinspace.com/wp-content/uploads/us_cities_and_states.zip",dest="us_cities_states.zip")
+    unzip("us_cities_states.zip")
+    
+    #read in data, looks like sql dump, blah
+    install.packages("data.table")
+    library(data.table)
+    states <- fread(input = "./us_cities_and_states/states.sql",skip = 23,sep = "'", sep2 = ",", header = F, select = c(2,4))
+    
+    cities <- fread(input = "./us_cities_and_states/cities_extended.sql", skip = 23,sep = "'", sep2 = ",", header = F, select = c(2,4))
+    ### YOU do the CITIES
+    ### I suggest the cities_extended.sql may have everything you need
+    ### can you figure out how to limit this to the 50?
+    
+    head(states)
+    head(cities)
+```
+
+The cities and states have been successfully imported.
+
+B. Create a summary table of the number of cities included by state.
+
+```{r city_summary }
+
+cities_u<-unique(cities)
+cities_count <- tapply(cities_u$V2, cities_u$V4, length)
+print(cities_count)
+
+```
+
+The cities have been uniquely identified within each state and saved into a variable. From thereafter, I use the tapply function to determine the length in each unique cities dataset.
+
+c. Create a function that counts the number of occurances of a letter in a string.  The input to the function should be "letter" and "state_name".  The output should be a scalar with the count for that letter.
+
+Create a for loop to loop through the state names imported in part a.  Inside the for loop, use an apply family function to iterate across a vector of letters and collect the occurance count as a vector.
+
+```{r states_loop }
+## code source below is if from https://stackoverflow.com/questions/12427385/how-to-calculate-the-number-of-occurrence-of-a-given-character-in-each-row-of-a
+
+    string.counter<-function(pattern, strings){  
+  counts<-NULL
+  strings<-tolower(strings)
+  for(i in 1:length(strings)){
+    counts[i]<-length(attr(gregexpr(pattern,strings[i])[[1]], which = "match.length")[attr(gregexpr(pattern,strings[i])[[1]], "match.length")>0])
+  }
+return(counts)
+}
+
+letter_count <- sapply(letters,string.counter,strings=states$V2)
+
+head(letter_count)
+
+```
+
+A string.counter function was cited and retrieved from a stackoverflow post for use in letter counts. The sapply function was used to count the letter occurrence in each of the 51 state names.
+
+Only the head function was used to prevent from excessive printing.
+
+D. Create 2 maps to finalize this.  
+
+Map 1 should be colored by count of cities on our list within the state.  
+
+
+```{r }
+    #https://cran.r-project.org/web/packages/fiftystater/vignettes/fiftystater.html
+    #install.packages("devtools")
+    #devtools::install_github("wmurphyrd/fiftystater")
+    #install.packages("mapproj")
+    library(ggplot2)
+    library(fiftystater)
+    library(mapproj)
+
+    data("fifty_states") # this line is optional due to lazy data loading
+    colored_cities <- data.frame(state =rownames(cities_count),count=cities_count)    
+    deleted_cities <-colored_cities[-c(40),]
+    combined_states <-cbind(deleted_cities, states)
+    final_states <-combined_states[,-c(1,4)]
+    colnames(final_states) <-c("count", "state")
+    final_states$state<-tolower(final_states$state)
+      map1 <- ggplot(final_states, aes(map_id = state)) +
+
+          # map points to the fifty_states shape data
+      geom_map(aes(fill = final_states$count), map = fifty_states) +
+      expand_limits(x = fifty_states$long, y = fifty_states$lat) +
+      coord_map() +
+      scale_x_continuous(breaks = NULL) +
+      scale_y_continuous(breaks = NULL) +
+      labs(x = "", y = "") +
+      theme(legend.position = "bottom",
+            panel.background = element_blank())
+
+    map1
+    
+    
+```
+The map was created based on the count of cities within each state.
+
+Map 2 should highlight only those states that have more than 3 occurances of ANY letter in thier name.
+
+```{r }
+
+
+    states_and_letters <-cbind(states$V2, rowSums(letter_count>=3))
+    states_and_letters <- data.frame(states_and_letters)
+    colnames(states_and_letters) <-c("state","count")
+    
+    states_and_letters$state<-tolower(states_and_letters$state)
+      map2 <- ggplot(states_and_letters, aes(map_id = state)) +
+
+          # map points to the fifty_states shape data
+      geom_map(aes(fill = states_and_letters$count), map = fifty_states) +
+      expand_limits(x = fifty_states$long, y = fifty_states$lat) +
+      coord_map() +
+      scale_x_continuous(breaks = NULL) +
+      scale_y_continuous(breaks = NULL) +
+      labs(x = "", y = "") +
+      theme(legend.position = "bottom",
+            panel.background = element_blank())
+
+    map2
+    
+    
+```
