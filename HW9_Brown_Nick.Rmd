@@ -1,0 +1,373 @@
+---
+title: "HW9_Brown_Nick"
+author: "Nick Brown"
+date: "11/19/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN="http://cran.us.r-project.org"))
+options(tinytex.verbose = TRUE)
+```
+
+# This weeks homework will be to simply get Keras and R working.  To demonstrate this, you need to work through two of the examples in the Keras list of examples or tutorials.  See here: https://keras.rstudio.com/
+
+## Install Keras
+
+```{r}
+#Install keras and tensorflow
+install.packages("keras")
+library(keras)
+install_keras()
+
+```
+```{r}
+
+#devtools::install_github("rstudio/reticulate")
+#devtools::install_github("rstudio/tensorflow")
+#devtools::install_github("rstudio/keras")
+#install.packages("reticulate")
+library(reticulate)
+use_virtualenv("r-tensorflow")
+update.packages("reticulate")
+reticulate::py_discover_config()
+reticulate::use_condaenv("r-tensorflow")
+reticulate::py_config()
+
+```
+
+```{r}
+#Install keras and tensorflow
+#install.packages("tensorflow")
+#library(tensorflow)
+#install_tensorflow()
+
+
+
+```
+
+
+
+
+```{r}
+
+```
+
+
+## Keras Example 1 - Basic Classification (https://keras.rstudio.com/articles/tutorial_basic_classification.html)
+
+```{r}
+# access the fashion mnist dataset
+#tensorflow::install_tensorflow()
+fashion_mnist <- dataset_fashion_mnist()
+
+
+
+```
+
+
+```{r}
+# Use keras to create arrays
+c(train_images, train_labels) %<-% fashion_mnist$train
+c(test_images, test_labels) %<-% fashion_mnist$test
+```
+
+```{r}
+class_names = c('T-shirt/top',
+                'Trouser',
+                'Pullover',
+                'Dress',
+                'Coat', 
+                'Sandal',
+                'Shirt',
+                'Sneaker',
+                'Bag',
+                'Ankle boot')
+```
+
+```{r}
+dim(train_images)
+```
+
+```{r}
+dim(train_labels)
+```
+
+
+```{r}
+train_labels[1:20]
+```
+
+```{r}
+dim(test_images)
+```
+
+```{r}
+dim(test_labels)
+```
+
+```{r}
+library(tidyr)
+library(ggplot2)
+
+image_1 <- as.data.frame(train_images[1, , ])
+colnames(image_1) <- seq_len(ncol(image_1))
+image_1$y <- seq_len(nrow(image_1))
+image_1 <- gather(image_1, "x", "value", -y)
+image_1$x <- as.integer(image_1$x)
+
+ggplot(image_1, aes(x = x, y = y, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "black", na.value = NA) +
+  scale_y_reverse() +
+  theme_minimal() +
+  theme(panel.grid = element_blank())   +
+  theme(aspect.ratio = 1) +
+  xlab("") +
+  ylab("")
+```
+
+```{r}
+train_images <- train_images / 255
+test_images <- test_images / 255
+```
+
+
+```{r}
+par(mfcol=c(5,5))
+par(mar=c(0, 0, 1.5, 0), xaxs='i', yaxs='i')
+for (i in 1:25) { 
+  img <- train_images[i, , ]
+  img <- t(apply(img, 2, rev)) 
+  image(1:28, 1:28, img, col = gray((0:255)/255), xaxt = 'n', yaxt = 'n',
+        main = paste(class_names[train_labels[i] + 1]))
+}
+```
+
+```{r}
+model <- keras_model_sequential()
+model %>%
+  layer_flatten(input_shape = c(28, 28)) %>%
+  layer_dense(units = 128, activation = 'relu') %>%
+  layer_dense(units = 10, activation = 'softmax')
+```
+
+```{r}
+model %>% compile(
+  optimizer = 'adam', 
+  loss = 'sparse_categorical_crossentropy',
+  metrics = c('accuracy')
+)
+```
+
+```{r}
+model %>% fit(train_images, train_labels, epochs = 5)
+```
+
+
+```{r}
+score <- model %>% evaluate(test_images, test_labels)
+
+cat('Test loss:', score$loss, "\n")
+cat('Test accuracy:', score$acc, "\n")
+```
+
+```{r}
+predictions <- model %>% predict(test_images)
+```
+
+```{r}
+predictions[1, ]
+```
+
+```{r}
+which.max(predictions[1, ])
+```
+
+```{r}
+class_pred <- model %>% predict_classes(test_images)
+class_pred[1:20]
+```
+
+
+```{r}
+test_labels[1]
+```
+
+```{r}
+par(mfcol=c(5,5))
+par(mar=c(0, 0, 1.5, 0), xaxs='i', yaxs='i')
+for (i in 1:25) { 
+  img <- test_images[i, , ]
+  img <- t(apply(img, 2, rev)) 
+  # subtract 1 as labels go from 0 to 9
+  predicted_label <- which.max(predictions[i, ]) - 1
+  true_label <- test_labels[i]
+  if (predicted_label == true_label) {
+    color <- '#008800' 
+  } else {
+    color <- '#bb0000'
+  }
+  image(1:28, 1:28, img, col = gray((0:255)/255), xaxt = 'n', yaxt = 'n',
+        main = paste0(class_names[predicted_label + 1], " (",
+                      class_names[true_label + 1], ")"),
+        col.main = color)
+}
+```
+
+```{r}
+# Grab an image from the test dataset
+# take care to keep the batch dimension, as this is expected by the model
+img <- test_images[1, , , drop = FALSE]
+dim(img)
+```
+
+```{r}
+predictions <- model %>% predict(img)
+predictions
+```
+
+
+```{r}
+# subtract 1 as labels are 0-based
+prediction <- predictions[1, ] - 1
+which.max(prediction)
+```
+
+```{r}
+class_pred <- model %>% predict_classes(img)
+class_pred
+```
+
+
+## Keras Example 2 - Basic Regression (https://keras.rstudio.com/articles/tutorial_basic_regression.html)
+
+```{r}
+boston_housing <- dataset_boston_housing()
+
+c(train_data, train_labels) %<-% boston_housing$train
+c(test_data, test_labels) %<-% boston_housing$test
+
+```
+
+
+```{r}
+paste0("Training entries: ", length(train_data), ", labels: ", length(train_labels))
+```
+
+```{r}
+train_data[1, ] # Display sample features, notice the different scales
+```
+
+```{r}
+library(tibble)
+
+column_names <- c('CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 
+                  'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT')
+train_df <- as_tibble(train_data)
+colnames(train_df) <- column_names
+
+train_df
+```
+
+```{r}
+train_labels[1:10] # Display first 10 entries
+```
+
+
+```{r}
+# Test data is *not* used when calculating the mean and std.
+
+# Normalize training data
+train_data <- scale(train_data) 
+
+# Use means and standard deviations from training set to normalize test set
+col_means_train <- attr(train_data, "scaled:center") 
+col_stddevs_train <- attr(train_data, "scaled:scale")
+test_data <- scale(test_data, center = col_means_train, scale = col_stddevs_train)
+
+train_data[1, ] # First training sample, normalized
+```
+
+```{r}
+build_model <- function() {
+  
+  model <- keras_model_sequential() %>%
+    layer_dense(units = 64, activation = "relu",
+                input_shape = dim(train_data)[2]) %>%
+    layer_dense(units = 64, activation = "relu") %>%
+    layer_dense(units = 1)
+  
+  model %>% compile(
+    loss = "mse",
+    optimizer = optimizer_rmsprop(),
+    metrics = list("mean_absolute_error")
+  )
+  
+  model
+}
+
+model <- build_model()
+model %>% summary()
+```
+
+```{r}
+# Display training progress by printing a single dot for each completed epoch.
+print_dot_callback <- callback_lambda(
+  on_epoch_end = function(epoch, logs) {
+    if (epoch %% 80 == 0) cat("\n")
+    cat(".")
+  }
+)    
+
+epochs <- 500
+
+# Fit the model and store training stats
+history <- model %>% fit(
+  train_data,
+  train_labels,
+  epochs = epochs,
+  validation_split = 0.2,
+  verbose = 0,
+  callbacks = list(print_dot_callback)
+)
+```
+
+```{r}
+library(ggplot2)
+
+plot(history, metrics = "mean_absolute_error", smooth = FALSE) +
+  coord_cartesian(ylim = c(0, 5))
+```
+
+```{r}
+# The patience parameter is the amount of epochs to check for improvement.
+early_stop <- callback_early_stopping(monitor = "val_loss", patience = 20)
+
+model <- build_model()
+history <- model %>% fit(
+  train_data,
+  train_labels,
+  epochs = epochs,
+  validation_split = 0.2,
+  verbose = 0,
+  callbacks = list(early_stop, print_dot_callback)
+)
+
+plot(history, metrics = "mean_absolute_error", smooth = FALSE) +
+  coord_cartesian(xlim = c(0, 150), ylim = c(0, 5))
+```
+
+
+```{r}
+c(loss, mae) %<-% (model %>% evaluate(test_data, test_labels, verbose = 0))
+
+paste0("Mean absolute error on test set: $", sprintf("%.2f", mae * 1000))
+```
+
+```{r}
+test_predictions <- model %>% predict(test_data)
+test_predictions[ , 1]
+```
+
